@@ -21,9 +21,12 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     private $_passwordEncoder;
 
     public function __construct(
-        private EntityManagerInterface $em,
-        private UserPasswordHasherInterface $passwordEncoder
-    ) {}
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordEncoder
+    ) {
+        $this->_em = $em;
+        $this->_passwordEncoder = $passwordEncoder;
+    }
 
     /**
      * {@inheritdoc}
