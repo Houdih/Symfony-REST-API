@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -22,7 +24,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read:users'])]
+    #[Groups(['read:users', 'read:articles'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
@@ -30,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['read:users', 'write:user'])]
+    #[Groups(['read:users', 'write:user', 'read:articles'])]
     private ?string $username = null;
 
     #[ORM\Column]
@@ -42,15 +44,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['write:user'])]
+    
     #[SerializedName('password')]
     #[Regex(
         pattern:"/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
         message: "Le mot de passe doit contenir minimum 7 caractères dont un chiffre, une lettre majuscule et une lettre minuscule"
     )]
+    #[Groups(['write:user'])]
     private ?string $plainPassword = null;
 
-    #[Groups(['write:user'])]
+    
     #[SerializedName('confirmed password')]
     #[Regex(
         pattern:"/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
@@ -60,7 +63,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         "this.getPlainPassword() === this.getPasswordBis()",
         message: "Passwords does not match"
     )]
+    #[Groups(['write:user'])]
     private ?string $passwordBis = null;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Article::class)]
+    #[Groups(['read:users'])]
+    private Collection $articles;
+
+
+    public function __construct() {
+        $this->articles = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -164,6 +178,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPasswordBis(string $passwordBis): self
     {
         $this->passwordBis = $passwordBis;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Article>
+     */
+    public function getArticles(): Collection
+    {
+        return $this->articles;
+    }
+
+    public function addArticle(Article $article): self
+    {
+        if (!$this->articles->contains($article)) {
+            $this->articles->add($article);
+            $article->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Article $article): self
+    {
+        if ($this->articles->removeElement($article)) {
+            // set the owning side to null (unless already changed)
+            if ($article->getAuthor() === $this) {
+                $article->setAuthor(null);
+            }
+        }
 
         return $this;
     }

@@ -42,12 +42,12 @@ class Article
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('read:articles')]
+    #[Groups('read:articles', 'read:users')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[
-        Groups(['read:articles', 'write:article']),
+        Groups(['read:articles', 'write:article', 'read:users']),
         Length(min:5)
     ]
     private ?string $title = null;
@@ -83,6 +83,11 @@ class Article
         Valid()
     ]
     private Collection $categories;
+
+    #[ORM\ManyToOne(inversedBy: 'articles')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['read:articles'])]
+    private ?User $author = null;
 
     public function __construct() {
         $this->createdAt = new \DateTimeImmutable();
@@ -217,6 +222,18 @@ class Article
     public function removeCategory(Category $category): self
     {
         $this->categories->removeElement($category);
+
+        return $this;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): self
+    {
+        $this->author = $author;
 
         return $this;
     }
