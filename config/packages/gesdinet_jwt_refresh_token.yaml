@@ -1,0 +1,5 @@
+gesdinet_jwt_refresh_token:
+    user_identity_field: id
+    user_provider: security.user.provider.concrete.app_user_provider
+    ttl: 86400
+    single_use: true

@@ -15,6 +15,9 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        refresh:
+            pattern:  ^/api/token/refresh
+            stateless: true
         login:
             provider: app_user_provider
             pattern: ^/api/login
@@ -29,7 +32,10 @@ security:
             provider: jwt
             pattern: ^/api/
             stateless: true
+            entry_point: jwt
             jwt: ~
+            refresh_jwt:
+                check_path: /api/token/refresh
         main:
             lazy: true
             provider: app_user_provider
