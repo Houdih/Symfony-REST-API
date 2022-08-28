@@ -2,36 +2,43 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\CommentRepository;
+use App\Entity\User;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CommentRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ApiResource(
-    normalizationContext: [
-        'groups' => ['read:comments'],
-    ],
-    denormalizationContext: [
-        ['groups' => ['write:comment']],
-    ]
+    normalizationContext: ['groups' => ['read:comments']],      
+    denormalizationContext: ['groups' => ['write:comment']],       
+    paginationItemsPerPage: 10,
+    paginationMaximumItemsPerPage: 20,
+    paginationClientItemsPerPage: true,
 )]
 class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read:comments', 'read:article'])]
+    #[Groups(['read:comments', 'read:articles', 'read:users'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['read:comments', 'write:comment', 'read:article'])]
+    #[Groups(['read:comments', 'write:comment', 'read:articles'])]
     private ?string $content = null;
 
     #[ORM\Column]
-    #[Groups(['read:comments', 'read:article'])]
+    #[Groups(['read:comments', 'read:articles'])]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'd-m-Y h:i:s'])]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['read:comments', 'read:articles'])]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
@@ -39,9 +46,16 @@ class Comment
     private ?Article $article = null;
 
 
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['read:comments', 'write:user'])]
+    private ?User $authorComment = null;
+    
+
     public function __construct() {
         $this->createdAt = new \DateTimeImmutable();
     }
+
 
 
     public function getId(): ?int
@@ -81,6 +95,30 @@ class Comment
     public function setArticle(?Article $article): self
     {
         $this->article = $article;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getAuthorComment(): ?User
+    {
+        return $this->authorComment;
+    }
+
+    public function setAuthorComment(?User $authorComment): self
+    {
+        $this->authorComment = $authorComment;
 
         return $this;
     }

@@ -26,23 +26,35 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
     paginationItemsPerPage: 10,
     paginationMaximumItemsPerPage: 20,
     paginationClientItemsPerPage: true,
+    collectionOperations: [
+        'get',
+        "post" => [
+            "security_post_denormalize" => "is_granted('ARTICLE_CREATE', object)",
+            "security_post_denormalize_message" => "Only Admins and Authors can add Articles.",
+        ],
+    ],
     itemOperations: [
-        'put',
-        'delete',
         'get' => [
             'normalization_context' => [
-                'groups' => ['read:articles', 'read:article'],
                 'openapi_definition_name' => 'item'
             ],            
-        ]
-    ]
+        ],
+        "put" => [
+            "security" => "is_granted('ARTICLE_EDIT', object)",
+            "security_message" => "Sorry, but you are not the actual Article owner."
+        ],
+        'delete' => [
+            "security" => "is_granted('ARTICLE_DELETE', object)",
+            "security_message" => "Sorry, but you are not the actual Article owner."
+        ],
+    ],
 )]
 class Article 
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups('read:articles', 'read:users')]
+    #[Groups(['read:articles', 'read:users'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -57,7 +69,7 @@ class Article
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['read:article', 'write:article'])]
+    #[Groups(['read:articles', 'write:article'])]
     private ?string $content = null;
 
     #[ORM\Column]
@@ -87,7 +99,7 @@ class Article
     #[ORM\ManyToOne(inversedBy: 'articles')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['read:articles'])]
-    private ?User $author = null;
+    private ?User $authorArticle = null;
 
     public function __construct() {
         $this->createdAt = new \DateTimeImmutable();
@@ -226,14 +238,14 @@ class Article
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthorArticle(): ?User
     {
-        return $this->author;
+        return $this->authorArticle;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthorArticle(?User $authorArticle): self
     {
-        $this->author = $author;
+        $this->authorArticle = $authorArticle;
 
         return $this;
     }

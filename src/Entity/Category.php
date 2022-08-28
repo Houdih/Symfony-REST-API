@@ -26,7 +26,7 @@ class Category
 
     #[ORM\Column(length: 255, unique: true)]
     #[
-        Groups(['read:categories', 'write:category', 'read:articles']),
+        Groups(['read:categories', 'write:category', 'read:articles', 'write:article']),
         Length(min:3)
     ]
     private ?string $name = null;

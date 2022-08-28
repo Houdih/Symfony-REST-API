@@ -17,7 +17,29 @@ use Symfony\Component\Validator\Constraints\Regex;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['read:users']],
-    denormalizationContext: ['groups' => ['write:user']]
+    denormalizationContext: ['groups' => ['write:user']],
+    paginationItemsPerPage: 10,
+    paginationMaximumItemsPerPage: 20,
+    paginationClientItemsPerPage: true,
+    collectionOperations: [
+        'get',
+        "post" 
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => [
+                'openapi_definition_name' => 'item'
+            ],            
+        ],
+        "put" => [
+            "security" => "is_granted('USER_EDIT', object)",
+            "security_message" => "Sorry, but you are not the actual User owner.",
+        ],
+        'delete' => [
+            "security" => "is_granted('USER_DELETE', object)",
+            "security_message" => "Sorry, but you are not the actual User owner.",
+        ],
+    ],
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -33,7 +55,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['read:users', 'write:user', 'read:articles'])]
-    private ?string $username = null;
+    private ?string $name = null;
 
     #[ORM\Column]
     private array $roles = [];
@@ -66,13 +88,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['write:user'])]
     private ?string $passwordBis = null;
 
-    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Article::class)]
+    #[ORM\OneToMany(mappedBy: 'authorArticle', targetEntity: Article::class)]
     #[Groups(['read:users'])]
     private Collection $articles;
+
+    #[ORM\OneToMany(mappedBy: 'authorComment', targetEntity: Comment::class)]
+    #[Groups(['read:users'])]
+    private Collection $comments;
 
 
     public function __construct() {
         $this->articles = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
 
@@ -146,14 +173,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->plainPassword = null;
     }
 
-    public function getUsername(): ?string
+    public function getname(): ?string
     {
-        return $this->username;
+        return $this->name;
     }
 
-    public function setUsername(?string $username): self
+    public function setname(?string $name): self
     {
-        $this->username = $username;
+        $this->name = $name;
 
         return $this;
     }
@@ -194,7 +221,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->articles->contains($article)) {
             $this->articles->add($article);
-            $article->setAuthor($this);
+            $article->setAuthorArticle($this);
         }
 
         return $this;
@@ -204,8 +231,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->articles->removeElement($article)) {
             // set the owning side to null (unless already changed)
-            if ($article->getAuthor() === $this) {
-                $article->setAuthor(null);
+            if ($article->getAuthorArticle() === $this) {
+                $article->setAuthorArticle(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setAuthorComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getAuthorComment() === $this) {
+                $comment->setAuthorComment(null);
             }
         }
 
