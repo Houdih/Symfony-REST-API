@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ArticleRepository;
 use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,6 +19,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ApiResource(
+    iri: 'https://schema.org/Article',
     normalizationContext: [
         'groups' => ['read:articles'],
         'openapi_definition_name' => 'collection'
@@ -84,6 +86,11 @@ class Article
     #[Groups(['read:articles'])]
     private ?bool $isPublished = false;
 
+    #[ORM\ManyToOne(targetEntity: MediaObject::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['read:articles','write:article'])]
+    public ?MediaObject $img = null;
+
     #[ORM\OneToMany(mappedBy: 'article', targetEntity: Comment::class, orphanRemoval: true)]
     #[ApiSubresource()]
     #[Groups(['read:articles'])]
@@ -120,6 +127,18 @@ class Article
     public function setTitle(string $title): self
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getImg(): ?MediaObject
+    {
+        return $this->img;
+    }
+
+    public function setImg(MediaObject $img): self
+    {
+        $this->img = $img;
 
         return $this;
     }
