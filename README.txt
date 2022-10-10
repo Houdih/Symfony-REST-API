@@ -1,7 +1,7 @@
 This API is developed in Symfony with the ApiPlatform framework.
-It is a blog type web application with an article system by Categories and Authentication by token.
-
-A voting system to manage resource permissions is implemented and the use of 'dataPersister' which is specific to ApiPlatform.
+It is a blog type web application.
+JWT (Json Web Token) token authentication.
+A voter system to manage resource permissions is implemented and the use of 'dataPersister' which is specific to ApiPlatform.
 
 Here are the resources;
     Users, with three defined roles (visitor, author and admin),
