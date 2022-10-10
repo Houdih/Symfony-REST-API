@@ -18,6 +18,28 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
     paginationItemsPerPage: 10,
     paginationMaximumItemsPerPage: 20,
     paginationClientItemsPerPage: true,
+    collectionOperations: [
+        'get',
+        "post" => [
+            "security_post_denormalize" => "is_granted('COMMENT_CREATE', object)",
+            "security_post_denormalize_message" => "Only users can add Articles.",
+        ],
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => [
+                'openapi_definition_name' => 'item'
+            ],            
+        ],
+        "put" => [
+            "security" => "is_granted('COMMENT_EDIT', object)",
+            "security_message" => "Sorry, but you are not the actual Comment owner."
+        ],
+        'delete' => [
+            "security" => "is_granted('COMMENT_DELETE', object)",
+            "security_message" => "Sorry, but you are not the actual Comment owner."
+        ],
+    ],
 )]
 class Comment
 {

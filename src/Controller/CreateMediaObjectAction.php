@@ -1,5 +1,4 @@
 <?php
-// api/src/Controller/CreateMediaObjectAction.php
 
 namespace App\Controller;
 
@@ -10,6 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
+/**
+ * Class upload media
+ */
 #[AsController]
 final class CreateMediaObjectAction extends AbstractController
 {
@@ -31,6 +33,7 @@ final class CreateMediaObjectAction extends AbstractController
 		return $mediaObject;
 	}
 
+	// Check file type and size
 	private function checkingFile($uploadedFile): ?bool
 	{
 		$file = $uploadedFile;

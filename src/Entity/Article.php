@@ -18,7 +18,6 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ApiResource(
-    iri: 'https://schema.org/Article',
     normalizationContext: [
         'groups' => ['read:articles'],
         'openapi_definition_name' => 'collection'

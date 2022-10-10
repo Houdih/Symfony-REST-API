@@ -34,20 +34,21 @@ class UserVoter extends Voter
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        // if the user is anonymous, do not grant access
+
         if (!$user instanceof UserInterface) {
             return false;
         }
 
-        // ADMIN All Access
+        // Le rôle 'admin' a touts les accès
         if($this->security->isGranted('ROLE_ADMIN')) {
             return true;
         }
 
+        // Only user can edit or delete his profil
         switch ($attribute) {
             case self::EDIT:
             case self::DELETE:
-               if($user === $subject) {
+               if($user === $subject->getUserIdentifier()) {
                 return true;
                 break;
                }

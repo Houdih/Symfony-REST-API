@@ -14,7 +14,25 @@ use Symfony\Component\Validator\Constraints\Length;
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['read:categories']],
-    denormalizationContext: ['groups' => ['write:category']]
+    denormalizationContext: ['groups' => ['write:category']],
+    collectionOperations: [
+        'get',
+        "post" => [
+            "security_post_denormalize" => "is_granted('ROLE_ADMIN', 'ROLE_AUTHOR')",
+            "security_post_denormalize_message" => "Only Admins and Authors can add Category.",
+        ],
+    ],
+    itemOperations: [
+        'get',
+        "put" => [
+            "security" => "is_granted('ROLE_ADMIN', 'ROLE_AUTHOR')",
+            "security_message" => "Only Admins and Authors can put Category."
+        ],
+        'delete' => [
+            "security" => "is_granted('ROLE_ADMIN', 'ROLE_AUTHOR')",
+            "security_message" => "Only Admins and Authors can delete Category."
+        ],
+    ],
 )]
 class Category
 {

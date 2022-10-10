@@ -15,7 +15,6 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     private $_em;
 
     /**
-     * Hashes the plain password for the given user.
      * @var UserPasswordHasherInterface
      */
     private $_passwordEncoder;
@@ -29,6 +28,7 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * vérifier si les données sont prises en charge par ce persistant de données
      * {@inheritdoc}
      */
     public function supports($data, array $context = []): bool
@@ -37,10 +37,12 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * créer ou mettre à jour les données données
      * @param User $data
      */
     public function persist($data, array $context = [])
     {
+        // Encodage du mot de passe 
         if ($data->getPlainPassword()) {
             $data->setPassword($this->_passwordEncoder->hashPassword($data, $data->getPlainPassword()));
             $data->eraseCredentials();
@@ -51,6 +53,7 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * supprimer les données données
      * {@inheritdoc}
      */
     public function remove($data, array $context = [])

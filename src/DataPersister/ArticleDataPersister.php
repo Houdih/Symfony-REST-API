@@ -34,7 +34,7 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
     private $_security;
 
     public function __construct(
-        private EntityManagerInterface $em,
+        EntityManagerInterface $em,
         SluggerInterface $slugger,
         RequestStack $requestStack,
         Security $security
@@ -58,13 +58,15 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
      */
     public function persist($data, array $context = [])
     {
+        // Update the slug
         $data->setSlug($this->_slugger->slug(strtolower($data->getTitle())). '-' .uniqid());
 
+        // Set the author if it's a new article
         if($this->_request->getMethod() === 'POST') {
             $data->setAuthorArticle($this->_security->getUser());
         }
         
-        // Set the updatedAt value if it's not a POST request
+        // Set the updatedAt value if it's a PUT or PATCH request
         if ($this->_request->getMethod() === 'PUT' || 'PATCH') {
             $data->setUpdatedAt(new \DateTimeImmutable());
         }
@@ -73,7 +75,7 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
         foreach ($data->getCategories() as $category) {
             $categoryName = $categoryRepo->findOneByName($category->getName());
 
-            // if the tag exists, don't persist it
+            // if the category exist, don't persist it
             if($categoryName !== null) {
                 $data->removeCategory($category);
                 $data->addCategory($categoryName);
@@ -87,6 +89,7 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * supprimer les données données
      * {@inheritdoc}
      */
     public function remove($data, array $context = [])

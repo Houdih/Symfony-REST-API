@@ -1,5 +1,4 @@
 <?php
-// api/src/Serializer/MediaObjectNormalizer.php
 
 namespace App\Serializer;
 
@@ -9,6 +8,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Vich\UploaderBundle\Storage\StorageInterface;
 
+// A normalizer could be used to set the 'contentUrl' property
 final class MediaObjectNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;

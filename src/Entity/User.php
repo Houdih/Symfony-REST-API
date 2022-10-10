@@ -42,7 +42,7 @@ use Symfony\Component\Validator\Constraints\Regex;
         ],
     ],
 )]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -109,6 +109,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
         return $this->id;
     }
 
+    // create setter for initialize with 'id' the payload
     public function setId(?int $id): self
     {
         $this->id = $id;
@@ -276,19 +277,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
 
         return $this;
     }
-
-    /**
-     * Creates a new instance from a given JWT payload.
-     *
-     * @param string $email
-     *
-     * @return JWTUserInterface
-     */
-    public static function createFromPayload($id, array $payload) {
-        $user = new User();
-        $user->setId($id);
-        $user->setEmail($payload['email'] ?? '');
-        return $user;
-    }
-
 }

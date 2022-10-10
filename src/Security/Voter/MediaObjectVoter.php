@@ -2,17 +2,17 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\Article;
+use App\Entity\MediaObject;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Security;
 
-class ArticleVoter extends Voter
+class MediaObjectVoter extends Voter
 {
-    const CREATE = 'ARTICLE_CREATE';
-    const EDIT = 'ARTICLE_EDIT';
-    const DELETE = 'ARTICLE_DELETE';
+    const CREATE = 'MEDIA_CREATE';
+    const EDIT = 'MEDIA_EDIT';
+    const DELETE = 'MEDIA_DELETE';
 
     private $security;
 
@@ -23,12 +23,12 @@ class ArticleVoter extends Voter
     protected function supports(string $attribute, $subject): bool
     {        
         return in_array($attribute, [self::CREATE, self::EDIT, self::DELETE])
-            && $subject instanceof Article;
+            && $subject instanceof MediaObject;
     }
 
     /**
      * @param $attribute
-     * @param Article $subject
+     * @param MediaObject $subject
      * @param TokenInterface $token
      * @return bool
      */
@@ -40,26 +40,10 @@ class ArticleVoter extends Voter
             return false;
         }
 
-        // Admin all granted
-        if($this->security->isGranted('ROLE_ADMIN')) {
+        // Admin and Author all granted
+        if($this->security->isGranted('ROLE_ADMIN', 'ROLE_AUTHOR')) {
             return true;
         }
 
-        // Author can create, edit or delete his Article
-        switch ($attribute) {
-            case self::CREATE:
-                if($this->security->isGranted('ROLE_AUTHOR')) {
-                    return true;
-                    break;
-                }
-            case self::EDIT:
-            case self::DELETE:
-                if($user === $subject->getAuthorArticle()) {
-                    return true;
-                    break;
-                }
-            default:
-                return false;
-        }        
     }
 }

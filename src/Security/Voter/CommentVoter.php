@@ -2,17 +2,17 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\Article;
+use App\Entity\Comment;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Security;
 
-class ArticleVoter extends Voter
+class CommentVoter extends Voter
 {
-    const CREATE = 'ARTICLE_CREATE';
-    const EDIT = 'ARTICLE_EDIT';
-    const DELETE = 'ARTICLE_DELETE';
+    const CREATE = 'COMMENT_CREATE';
+    const EDIT = 'COMMENT_EDIT';
+    const DELETE = 'COMMENT_DELETE';
 
     private $security;
 
@@ -23,12 +23,12 @@ class ArticleVoter extends Voter
     protected function supports(string $attribute, $subject): bool
     {        
         return in_array($attribute, [self::CREATE, self::EDIT, self::DELETE])
-            && $subject instanceof Article;
+            && $subject instanceof Comment;
     }
 
     /**
      * @param $attribute
-     * @param Article $subject
+     * @param Comment $subject
      * @param TokenInterface $token
      * @return bool
      */
@@ -45,21 +45,22 @@ class ArticleVoter extends Voter
             return true;
         }
 
-        // Author can create, edit or delete his Article
+        // User can create and edit or delete his comment
         switch ($attribute) {
             case self::CREATE:
-                if($this->security->isGranted('ROLE_AUTHOR')) {
+                if($this->security->isGranted('ROLE_USER')) {
                     return true;
                     break;
                 }
             case self::EDIT:
             case self::DELETE:
-                if($user === $subject->getAuthorArticle()) {
+                if($user === $subject->getAuthorComment()) {
                     return true;
                     break;
                 }
             default:
                 return false;
-        }        
+        }
+        
     }
 }

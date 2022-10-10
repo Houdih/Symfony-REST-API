@@ -36,6 +36,7 @@ class CommentDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * vérifier si les données sont prises en charge par ce persistant de données
      * {@inheritdoc}
      */
     public function supports($data, array $context = []): bool
@@ -44,14 +45,17 @@ class CommentDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * créer ou mettre à jour les données données
      * @param Comment $data
      */
     public function persist($data, array $context = [])
     {
+        // Définir l'autheur du commentaire
         if($this->_request->getMethod() === 'POST') {
             $data->setAuthorComment($this->_security->getUser());
         }       
 
+        // Modifie la valeur de 'updatedAt' si c'est une requête est en 'put' ou 'patch'
         if($this->_request->getMethod() === 'PATCH' || 'PUT') {
             $data->setUpdatedAt(new \DateTimeImmutable());
         }
@@ -61,6 +65,7 @@ class CommentDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
+     * supprimer les données données
      * {@inheritdoc}
      */
     public function remove($data, array $context = [])
