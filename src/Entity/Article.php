@@ -36,7 +36,8 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
     itemOperations: [
         'get' => [
             'normalization_context' => [
-                'openapi_definition_name' => 'item'
+                'openapi_definition_name' => 'item',
+                'groups' => ['read:articles','read:article']
             ],            
         ],
         "put" => [
@@ -69,11 +70,11 @@ class Article
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['read:articles', 'write:article'])]
+    #[Groups(['read:article', 'write:article'])]
     private ?string $content = null;
 
     #[ORM\Column]
-    #[Groups('read:articles')]
+    #[Groups('read:articles', 'read:users')]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'd-m-Y h:i:s'])]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -81,7 +82,7 @@ class Article
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(options: ["default" => 0])]
-    #[Groups(['read:articles'])]
+    #[Groups(['read:articles', 'read:users'])]
     private ?bool $isPublished = false;
 
     #[ORM\ManyToOne(targetEntity: MediaObject::class)]
@@ -96,7 +97,7 @@ class Article
 
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'articles', cascade: ['persist'])]
     #[
-        Groups(['read:articles', 'write:article']),
+        Groups(['read:articles', 'write:article', 'read:users']),
         Valid()
     ]
     private Collection $categories;

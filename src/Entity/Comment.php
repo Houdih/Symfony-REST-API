@@ -46,20 +46,20 @@ class Comment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read:comments', 'read:articles', 'read:users'])]
+    #[Groups(['read:comments', 'read:article', 'read:users'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['read:comments', 'write:comment', 'read:articles'])]
+    #[Groups(['read:comments', 'write:comment', 'read:article', 'read:users'])]
     private ?string $content = null;
 
     #[ORM\Column]
-    #[Groups(['read:comments', 'read:articles'])]
+    #[Groups(['read:comments', 'read:article'])]
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'd-m-Y h:i:s'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['read:comments', 'read:articles'])]
+    #[Groups(['read:comments', 'read:article'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
@@ -70,7 +70,7 @@ class Comment
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read:comments', 'write:user'])]
+    #[Groups(['read:comments', 'read:article'])]
     private ?User $authorComment = null;
     
 

@@ -27,11 +27,7 @@ use Symfony\Component\Validator\Constraints\Regex;
         "post" 
     ],
     itemOperations: [
-        'get' => [
-            'normalization_context' => [
-                'openapi_definition_name' => 'item'
-            ],            
-        ],
+        'get',
         "put" => [
             "security" => "is_granted('USER_EDIT', object)",
             "security_message" => "Sorry, but you are not the actual User owner.",
@@ -42,23 +38,24 @@ use Symfony\Component\Validator\Constraints\Regex;
         ],
     ],
 )]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['read:users', 'read:articles'])]
+    #[Groups(['read:users', 'read:article'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['read:users', 'write:user'])]
+    #[Groups(['read:users', 'write:user', 'read:article'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['read:users', 'write:user', 'read:articles'])]
+    #[Groups(['read:users', 'write:user', 'read:article'])]
     private ?string $name = null;
 
     #[ORM\Column]
+    #[Groups(['read:users'])]
     private array $roles = [];
 
     /**
@@ -94,7 +91,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $articles;
 
     #[ORM\OneToMany(mappedBy: 'authorComment', targetEntity: Comment::class)]
-    #[Groups(['read:users'])]
     private Collection $comments;
 
 
@@ -276,5 +272,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    public static function createFromPayload($id, array $payload)
+    {
+       
+        $user = new user();
+        $user->setId($id);
+        $user->setRoles($payload['roles']);
+        return $user;
     }
 }
