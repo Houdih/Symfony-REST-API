@@ -2,18 +2,20 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\UserRepository;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints\Expression;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Validator\Constraints\Expression;
-use Symfony\Component\Validator\Constraints\Regex;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
@@ -38,6 +40,7 @@ use Symfony\Component\Validator\Constraints\Regex;
         ],
     ],
 )]
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
 {
     #[ORM\Id]
@@ -46,13 +49,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     #[Groups(['read:users', 'read:article'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180, unique: true)]
+    #[ORM\Column(length: 180, unique: true, name: 'email', type: 'string')]
     #[Groups(['read:users', 'write:user', 'read:article'])]
+    #[Assert\Email]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['read:users', 'write:user', 'read:article'])]
-    private ?string $name = null;
+    private ?string $pseudo = null;
 
     #[ORM\Column]
     #[Groups(['read:users'])]
@@ -142,7 +146,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $roles[] = 'ROLE_ADMIN';
 
         return array_unique($roles);
     }
@@ -178,14 +182,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
         $this->plainPassword = null;
     }
 
-    public function getname(): ?string
+    public function getPseudo(): ?string
     {
-        return $this->name;
+        return $this->pseudo;
     }
 
-    public function setname(?string $name): self
+    public function setPseudo(?string $pseudo): self
     {
-        $this->name = $name;
+        $this->pseudo = $pseudo;
 
         return $this;
     }
@@ -276,7 +280,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
 
     public static function createFromPayload($id, array $payload)
     {
-       
         $user = new user();
         $user->setId($id);
         $user->setRoles($payload['roles']);

@@ -37,7 +37,7 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     }
 
     /**
-     * créer ou mettre à jour les données données
+     * Créer ou mettre à jour les données reçu
      * @param User $data
      */
     public function persist($data, array $context = [])
