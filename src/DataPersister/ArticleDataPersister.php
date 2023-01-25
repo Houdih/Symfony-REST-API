@@ -5,6 +5,7 @@ namespace App\DataPersister;
 use App\Entity\Article;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use App\Entity\Category;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,6 +56,8 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
 
     /**
      * @param Article $data
+     * @param array $context
+     * @return object|void
      */
     public function persist($data, array $context = [])
     {
@@ -63,7 +66,11 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
 
         // Set the author if it's a new article
         if($this->_request->getMethod() === 'POST') {
-            $data->setAuthorArticle($this->_security->getUser());
+            $user = $this->_security->getUser();
+            $userId = $user->getId();
+            $userRepo = $this->_em->getRepository(User::class);
+            $user = $userRepo->find($userId);
+            $data->setAuthorArticle($user);
         }
         
         // Set the updatedAt value if it's a PUT or PATCH request

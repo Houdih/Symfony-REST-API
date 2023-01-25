@@ -55,7 +55,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['read:users', 'write:user', 'read:article'])]
+    #[Groups(['read:users', 'write:user', 'read:article', 'read:articles'])]
     private ?string $pseudo = null;
 
     #[ORM\Column]

@@ -48,6 +48,10 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
             $data->eraseCredentials();
         }
 
+        if ($data->getEmail() )
+
+
+
         $this->_em->persist($data);
         $this->_em->flush();
     }

@@ -70,7 +70,7 @@ class Article
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['read:article', 'write:article'])]
+    #[Groups(['read:article', 'read:articles', 'write:article'])]
     private ?string $content = null;
 
     #[ORM\Column]
