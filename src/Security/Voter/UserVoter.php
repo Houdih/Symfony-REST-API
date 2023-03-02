@@ -3,6 +3,7 @@
 namespace App\Security\Voter;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -14,9 +15,11 @@ class UserVoter extends Voter
     public const DELETE = 'USER_DELETE';
 
     private $security;
+    private $em;
 
-    public function __construct(Security $security){
+    public function __construct(Security $security, EntityManagerInterface $em){
         $this->security = $security;
+        $this->em = $em;
     }
 
     protected function supports(string $attribute, $subject): bool
@@ -35,9 +38,12 @@ class UserVoter extends Voter
     {
         $user = $token->getUser();
 
-        if (!$user instanceof UserInterface) {
+        if (!$user instanceof UserInterface || !$user instanceof User) {
             return false;
         }
+        $userId = $user->getId();
+        $userRepo = $this->em->getRepository(User::class);
+        $user = $user = $userRepo->find($userId);
 
         // Le rôle 'admin' a touts les accès
         if($this->security->isGranted('ROLE_ADMIN')) {
@@ -48,7 +54,7 @@ class UserVoter extends Voter
         switch ($attribute) {
             case self::EDIT:
             case self::DELETE:
-               if($user === $subject->getUserIdentifier()) {
+               if($user === $subject) {
                 return true;
                 break;
                }

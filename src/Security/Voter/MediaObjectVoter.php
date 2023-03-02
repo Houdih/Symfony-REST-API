@@ -11,7 +11,6 @@ use Symfony\Component\Security\Core\Security;
 class MediaObjectVoter extends Voter
 {
     const CREATE = 'MEDIA_CREATE';
-    const EDIT = 'MEDIA_EDIT';
     const DELETE = 'MEDIA_DELETE';
 
     private $security;
@@ -22,7 +21,7 @@ class MediaObjectVoter extends Voter
 
     protected function supports(string $attribute, $subject): bool
     {        
-        return in_array($attribute, [self::CREATE, self::EDIT, self::DELETE])
+        return in_array($attribute, [self::CREATE, self::DELETE])
             && $subject instanceof MediaObject;
     }
 
@@ -41,9 +40,9 @@ class MediaObjectVoter extends Voter
         }
 
         // Admin and Author all granted
-        if($this->security->isGranted('ROLE_ADMIN', 'ROLE_AUTHOR')) {
+        if($this->security->isGranted('ROLE_ADMIN')) {
             return true;
-        }
+        }  
 
     }
 }

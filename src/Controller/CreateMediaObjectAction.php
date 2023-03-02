@@ -41,8 +41,8 @@ final class CreateMediaObjectAction extends AbstractController
 		$size = $file->getSize();
 		$error = $file->getError();
 
-		$extensions = ['jpg','png', 'jpeg', 'gif'];
-		$maxSize = 600000;
+		$extensions = ['jpg','png', 'jpeg', 'gif', 'svg', 'webp'];
+		$maxSize = 4900000;
 
 		if(in_array($extension, $extensions))
 		{
@@ -55,13 +55,13 @@ final class CreateMediaObjectAction extends AbstractController
 			}
 			else
 			{
-				throw new Exception('the size of the file is too big');
+				throw new Exception("La taille du fichier est trop volumineux ; ne doit pas depasser 90Mo");
 			}
 
 			return true;
 		}
 		else{
-			throw new Exception('the format isn\'t supported');
+			throw new Exception("Le format n'est pas supporté");
 		}
 	}
 }

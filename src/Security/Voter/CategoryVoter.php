@@ -46,7 +46,7 @@ class CategoryVoter extends Voter
         }
 
         // Admin and Author all granted
-        if($this->security->isGranted('ROLE_ADMIN', 'ROLE_AUTHOR')) {
+        if($this->security->isGranted('ROLE_ADMIN')) {
             return true;
         }
     }

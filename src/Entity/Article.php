@@ -2,12 +2,15 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use App\Entity\Category;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ArticleRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,20 +20,21 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
+#[ApiFilter(SearchFilter::class, properties: ["content" => "partial"])]
 #[ApiResource(
     normalizationContext: [
         'groups' => ['read:articles'],
         'openapi_definition_name' => 'collection'
     ],
     denormalizationContext: ['groups' => ['write:article']],
-    paginationItemsPerPage: 10,
-    paginationMaximumItemsPerPage: 20,
+    paginationItemsPerPage: 12,
     paginationClientItemsPerPage: true,
+    order: ["id" => "DESC"],
     collectionOperations: [
         'get',
         "post" => [
             "security_post_denormalize" => "is_granted('ARTICLE_CREATE', object)",
-            "security_post_denormalize_message" => "Only Admins and Authors can add Articles.",
+            "security_post_denormalize_message" => "Vous n'avez pas les droits pour ajouter un article !",
         ],
     ],
     itemOperations: [
@@ -42,11 +46,11 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
         ],
         "put" => [
             "security" => "is_granted('ARTICLE_EDIT', object)",
-            "security_message" => "Sorry, but you are not the actual Article owner."
+            "security_message" => "Désolé vous n'avez pas les droits pour modifier l'article !"
         ],
         'delete' => [
             "security" => "is_granted('ARTICLE_DELETE', object)",
-            "security_message" => "Sorry, but you are not the actual Article owner."
+            "security_message" => "Désolé vous n'avez pas les droits pour supprimer l'article !"
         ],
     ],
 )]
@@ -73,21 +77,26 @@ class Article
     #[Groups(['read:article', 'read:articles', 'write:article'])]
     private ?string $content = null;
 
+    #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['read:article', 'read:articles', 'write:article'])]
+    private ?string $synopsis = null;
+
     #[ORM\Column]
     #[Groups('read:articles', 'read:users')]
-    #[Context([DateTimeNormalizer::FORMAT_KEY => 'd-m-Y h:i:s'])]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'd/m/Y'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups('read:articles', 'read:users')]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(options: ["default" => 0])]
-    #[Groups(['read:articles', 'read:users'])]
+    #[Groups(['read:articles', 'read:users', "write:article"])]
     private ?bool $isPublished = false;
 
     #[ORM\ManyToOne(targetEntity: MediaObject::class)]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['read:articles','write:article'])]
+    #[Groups(['read:articles','write:article', 'read:article'])]
     public ?MediaObject $img = null;
 
     #[ORM\OneToMany(mappedBy: 'article', targetEntity: Comment::class, orphanRemoval: true)]
@@ -97,7 +106,7 @@ class Article
 
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'articles', cascade: ['persist'])]
     #[
-        Groups(['read:articles', 'write:article', 'read:users']),
+        Groups(['read:articles', 'read:article', 'read:category', 'write:article']),
         Valid()
     ]
     private Collection $categories;
@@ -106,6 +115,7 @@ class Article
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['read:articles'])]
     private ?User $authorArticle = null;
+
 
     public function __construct() {
         $this->createdAt = new \DateTimeImmutable();
@@ -264,6 +274,18 @@ class Article
     public function setAuthorArticle(?User $authorArticle): self
     {
         $this->authorArticle = $authorArticle;
+
+        return $this;
+    }
+
+    public function getSynopsis(): ?string
+    {
+        return $this->synopsis;
+    }
+
+    public function setSynopsis(string $synopsis): self
+    {
+        $this->synopsis = $synopsis;
 
         return $this;
     }

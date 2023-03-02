@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -26,17 +25,20 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
     paginationClientItemsPerPage: true,
     collectionOperations: [
         'get',
-        "post" 
+        "post"  => [
+            "security" => "is_granted('ROLE_ADMIN')",
+            "security_message" => "Désolé vous n'avez pas les droits pour ajouter un utilisateur !",
+        ],
     ],
     itemOperations: [
         'get',
         "put" => [
             "security" => "is_granted('USER_EDIT', object)",
-            "security_message" => "Sorry, but you are not the actual User owner.",
+            "security_message" => "Désolé vous n'avez pas les droits pour modifier cet utilisateur !",
         ],
         'delete' => [
             "security" => "is_granted('USER_DELETE', object)",
-            "security_message" => "Sorry, but you are not the actual User owner.",
+            "security_message" => "Désolé vous n'avez pas les droits pour supprimer cet utilisateur !",
         ],
     ],
 )]
@@ -59,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     private ?string $pseudo = null;
 
     #[ORM\Column]
-    #[Groups(['read:users'])]
+    #[Groups(['read:users', 'write:user'])]
     private array $roles = [];
 
     /**
@@ -74,20 +76,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
         pattern:"/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
         message: "Le mot de passe doit contenir minimum 7 caractères dont un chiffre, une lettre majuscule et une lettre minuscule"
     )]
-    #[Groups(['write:user'])]
+    #[Groups(['write:user', 'read:users'])]
     private ?string $plainPassword = null;
 
-    
-    #[SerializedName('confirmed password')]
     #[Regex(
         pattern:"/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
-        message: "Le mot de passe doit contenir minimum 7 caractères dont un chiffre, une lettre majuscule et une lettre minuscule"
+        message: "Le mot de passe doit commencer par une majuscule et contenir minimum 7 caractères dont un chiffre, une lettre majuscule et une lettre minuscule"
     )]
     #[Expression(
         "this.getPlainPassword() === this.getPasswordBis()",
         message: "Passwords does not match"
     )]
-    #[Groups(['write:user'])]
+    #[Groups(['write:user', 'read:users'])]
     private ?string $passwordBis = null;
 
     #[ORM\OneToMany(mappedBy: 'authorArticle', targetEntity: Article::class)]
@@ -145,8 +145,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_ADMIN';
+        // guarantee every user at least has ROLE_VISITOR
+        $roles[] = 'ROLE_VISITOR';
 
         return array_unique($roles);
     }

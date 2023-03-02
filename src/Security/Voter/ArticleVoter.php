@@ -3,6 +3,8 @@
 namespace App\Security\Voter;
 
 use App\Entity\Article;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -15,9 +17,11 @@ class ArticleVoter extends Voter
     const DELETE = 'ARTICLE_DELETE';
 
     private $security;
+    private $em;
 
-    public function __construct(Security $security) {    
+    public function __construct(Security $security, EntityManagerInterface $em) {    
         $this->security = $security;
+        $this->em = $em;
     }
 
     protected function supports(string $attribute, $subject): bool
@@ -36,9 +40,13 @@ class ArticleVoter extends Voter
     {
         $user = $token->getUser();
 
-        if (!$user instanceof UserInterface) {
+        if (!$user instanceof UserInterface || !$user instanceof User) {
             return false;
         }
+        
+        $userId = $user->getId();
+        $userRepo = $this->em->getRepository(User::class);
+        $user = $user = $userRepo->find($userId);
 
         // Admin all granted
         if($this->security->isGranted('ROLE_ADMIN')) {

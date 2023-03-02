@@ -67,10 +67,12 @@ class ArticleDataPersister implements ContextAwareDataPersisterInterface
         // Set the author if it's a new article
         if($this->_request->getMethod() === 'POST') {
             $user = $this->_security->getUser();
-            $userId = $user->getId();
-            $userRepo = $this->_em->getRepository(User::class);
-            $user = $userRepo->find($userId);
-            $data->setAuthorArticle($user);
+            if ($user instanceof User) {
+                $userId = $user->getId();
+                $userRepo = $this->_em->getRepository(User::class);
+                $user = $userRepo->find($userId);
+                $data->setAuthorArticle($user);
+            }
         }
         
         // Set the updatedAt value if it's a PUT or PATCH request

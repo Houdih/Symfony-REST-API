@@ -23,11 +23,12 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     normalizationContext: ['groups' => ['media_object:read']],
     itemOperations: [
         'get',
-        'delete' => ["security" => "is_granted('MEDIA_DELETE',object)"]
+        'delete' => ["security" => "is_granted('ROLE_AUTHOR')"]
     ],
     collectionOperations: [
         'get',
         'post' => [
+            "security" => "is_granted('ROLE_AUTHOR')",
             'controller' => CreateMediaObjectAction::class,
             'deserialize' => false,
             'validation_groups' => ['Default', 'media_object_create'],
@@ -54,10 +55,11 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 class MediaObject
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
+    #[Groups(['media_object:read','read:articles', 'read:article'])]
     private ?int $id = null;
 
     #[ApiProperty(iri: 'https://schema.org/contentUrl')]
-    #[Groups(['media_object:read','read:articles'])]
+    #[Groups(['media_object:read','read:articles', 'read:article'])]
     public ?string $contentUrl = null;
 
     /**
