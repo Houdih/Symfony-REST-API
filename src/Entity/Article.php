@@ -29,7 +29,7 @@ use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
     denormalizationContext: ['groups' => ['write:article']],
     paginationItemsPerPage: 12,
     paginationClientItemsPerPage: true,
-    order: ["id" => "DESC"],
+    order: ["createdAt" => "DESC"],
     collectionOperations: [
         'get',
         "post" => [

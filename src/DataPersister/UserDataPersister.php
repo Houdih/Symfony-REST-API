@@ -48,9 +48,11 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
             $data->eraseCredentials();
         }
 
-        if ($data->getEmail() )
-
-
+        // Verification de l'email
+        $existEmail = $this->_em->getRepository(user::class)->findOneBy(['email' => $data->getEmail()]);
+        if($existEmail) {
+            throw new \InvalidArgumentException('Cet email est déjà prit');
+        }
 
         $this->_em->persist($data);
         $this->_em->flush();
